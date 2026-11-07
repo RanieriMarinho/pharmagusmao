@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmaGusmão - Gestão de Farmácia e Patrimônio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- ================= TELA DE LOGIN BLOQUEANTE ================= -->
+    <div id="login-screen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-8 relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-2 bg-emerald-500"></div>
+            
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center bg-emerald-100 text-emerald-600 p-3 rounded-2xl mb-3">
+                    <i data-lucide="beaker" class="w-8 h-8"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900">PharmaGusmão</h2>
+                <p class="text-xs text-slate-500 mt-1">Acesso Restrito ao Sistema de Gestão Acadêmica</p>
+            </div>
+
+            <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+                <div id="login-error" class="hidden p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-600 font-medium text-center">
+                    Usuário ou senha inválidos.
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Usuário / Reg. Funcional</label>
+                    <div class="relative">
+                        <i data-lucide="user" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+                        <input type="text" id="login-username" required placeholder="Ex: admin ou prof" class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Senha</label>
+                    <div class="relative">
+                        <i data-lucide="lock" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+                        <input type="password" id="login-password" required placeholder="••••••••" class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg text-sm transition shadow-sm flex items-center justify-center space-x-2">
+                    <i data-lucide="log-in" class="w-4 h-4"></i>
+                    <span>Entrar no Sistema</span>
+                </button>
+
+                <div class="mt-4 pt-4 border-t border-slate-100 text-xs text-slate-400 space-y-1">
+                    <p class="font-semibold text-slate-500">Contas de Acesso Disponíveis:</p>
+                    <p>• Admin: <span class="font-mono text-slate-700">admin</span> / <span class="font-mono text-slate-700">admin123</span></p>
+                    <p>• Professor: <span class="font-mono text-slate-700">prof</span> / <span class="font-mono text-slate-700">prof123</span> ou RF do docente / <span class="font-mono text-slate-700">123456</span></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Top Navigation Header -->
+    <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo & Brand -->
+                <div class="flex items-center space-x-3">
+                    <div class="bg-emerald-500 text-white p-2 rounded-lg shadow">
+                        <i data-lucide="beaker" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-none text-white">PharmaGusmão</h1>
+                        <span class="text-xs text-slate-400">Controle Acadêmico & Patrimônio</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs (Desktop) -->
+                <nav class="hidden md:flex space-x-1">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="tab-btn px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-2 transition text-emerald-400 bg-slate-800">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                        <span>Dashboard</span>
+                    </button>
+                    <button onclick="switchTab('insumos')" id="nav-insumos" class="tab-btn px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-2 transition text-slate-300 hover:text-white hover:bg-slate-800">
+                        <i data-lucide="package" class="w-4 h-4"></i>
+                        <span>Insumos</span>
+                    </button>
+                    <button onclick="switchTab('equipamentos')" id="nav-equipamentos" class="tab-btn px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-2 transition text-slate-300 hover:text-white hover:bg-slate-800">
+                        <i data-lucide="monitor" class="w-4 h-4"></i>
+                        <span>Equipamentos</span>
+                    </button>
+                    <button onclick="switchTab('professores')" id="nav-professores" class="tab-btn px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-2 transition text-slate-300 hover:text-white hover:bg-slate-800">
+                        <i data-lucide="users" class="w-4 h-4"></i>
+                        <span>Professores</span>
+                    </button>
+                    <button onclick="switchTab('movimentacoes')" id="nav-movimentacoes" class="tab-btn px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-2 transition text-slate-300 hover:text-white hover:bg-slate-800">
+                        <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
+                        <span>Movimentações</span>
+                    </button>
+                </nav>
+
+                <!-- Action & User Profile Info -->
+                <div class="flex items-center space-x-3">
+                    <div class="hidden sm:flex flex-col text-right text-xs">
+                        <span id="user-display-name" class="font-bold text-white">Usuário</span>
+                        <span id="user-display-role" class="text-[10px] text-emerald-400 uppercase font-semibold">Admin</span>
+                    </div>
+
+                    <button onclick="resetSystemData()" id="btn-reset-data" title="Resetar para dados padrão" class="admin-only text-slate-400 hover:text-red-400 p-2 rounded-lg hover:bg-slate-800 transition">
+                        <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+                    </button>
+
+                    <button onclick="handleLogout()" title="Sair do sistema" class="text-slate-400 hover:text-amber-400 p-2 rounded-lg hover:bg-slate-800 transition">
+                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Tabs Bar -->
+        <div class="md:hidden flex overflow-x-auto bg-slate-950 px-2 py-1 space-x-1 border-t border-slate-800">
+            <button onclick="switchTab('dashboard')" id="mob-nav-dashboard" class="mob-tab-btn whitespace-nowrap px-3 py-2 rounded-md text-xs font-medium text-emerald-400 bg-slate-800">Dashboard</button>
+            <button onclick="switchTab('insumos')" id="mob-nav-insumos" class="mob-tab-btn whitespace-nowrap px-3 py-2 rounded-md text-xs font-medium text-slate-300">Insumos</button>
+            <button onclick="switchTab('equipamentos')" id="mob-nav-equipamentos" class="mob-tab-btn whitespace-nowrap px-3 py-2 rounded-md text-xs font-medium text-slate-300">Equipamentos</button>
+            <button onclick="switchTab('professores')" id="mob-nav-professores" class="mob-tab-btn whitespace-nowrap px-3 py-2 rounded-md text-xs font-medium text-slate-300">Professores</button>
+            <button onclick="switchTab('movimentacoes')" id="mob-nav-movimentacoes" class="mob-tab-btn whitespace-nowrap px-3 py-2 rounded-md text-xs font-medium text-slate-300">Movimentações</button>
+        </div>
+    </header>
+
+    <!-- Notification Toast Container -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- ================= DASHBOARD TAB ================= -->
+        <section id="tab-dashboard" class="space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900">Visão Geral do Laboratório</h2>
+                    <p class="text-sm text-slate-500">Resumo em tempo real dos insumos, patrimônio e atividades.</p>
+                </div>
+            </div>
+
+            <!-- Metrics Cards Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Insumos Cadastrados</p>
+                        <h3 id="dash-stat-insumos" class="text-3xl font-bold text-slate-900 mt-1">0</h3>
+                        <p class="text-xs text-slate-400 mt-1"><span id="dash-stat-baixo-estoque" class="text-amber-600 font-medium">0</span> com estoque baixo</p>
+                    </div>
+                    <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                        <i data-lucide="package" class="w-7 h-7"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Equipamentos / Patrimônio</p>
+                        <h3 id="dash-stat-equipamentos" class="text-3xl font-bold text-slate-900 mt-1">0</h3>
+                        <p class="text-xs text-slate-400 mt-1"><span id="dash-stat-em-uso" class="text-blue-600 font-medium">0</span> em empréstimo/uso</p>
+                    </div>
+                    <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                        <i data-lucide="monitor" class="w-7 h-7"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Professores Ativos</p>
+                        <h3 id="dash-stat-professores" class="text-3xl font-bold text-slate-900 mt-1">0</h3>
+                        <p class="text-xs text-slate-400 mt-1">Cadastrados no sistema</p>
+                    </div>
+                    <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+                        <i data-lucide="users" class="w-7 h-7"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Alertas Críticos</p>
+                        <h3 id="dash-stat-alertas" class="text-3xl font-bold text-rose-600 mt-1">0</h3>
+                        <p class="text-xs text-rose-500 mt-1">Estoque crítico / Vencendo</p>
+                    </div>
+                    <div class="p-3 bg-rose-50 text-rose-600 rounded-xl">
+                        <i data-lucide="alert-triangle" class="w-7 h-7"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity & Alerts List -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+                    <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center space-x-2">
+                        <i data-lucide="history" class="w-5 h-5 text-slate-500"></i>
+                        <span>Últimas Movimentações</span>
+                    </h3>
+                    <div id="dash-list-movimentacoes" class="space-y-3"></div>
+                </div>
+
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+                    <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center space-x-2">
+                        <i data-lucide="shield-alert" class="w-5 h-5 text-amber-500"></i>
+                        <span>Insumos Requerendo Atenção</span>
+                    </h3>
+                    <div id="dash-list-alertas" class="space-y-3"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= INSUMOS TAB ================= -->
+        <section id="tab-insumos" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900">Insumos de Farmácia</h2>
+                    <p class="text-sm text-slate-500">Gerencie reagentes, vidrarias, descartáveis e medicamentos.</p>
+                </div>
+                <button onclick="openInsumoModal()" class="admin-only inline-flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition shadow-sm">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Novo Insumo</span>
+                </button>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3">
+                <div class="relative flex-1">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+                    <input type="text" id="insumo-search" oninput="renderInsumos()" placeholder="Buscar por nome, lote ou localização..." class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <select id="insumo-filter-categoria" onchange="renderInsumos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-600 bg-white">
+                    <option value="">Todas Categorias</option>
+                    <option value="Reagentes">Reagentes</option>
+                    <option value="Descartáveis">Descartáveis</option>
+                    <option value="Vidrarias">Vidrarias</option>
+                    <option value="Medicamentos">Medicamentos</option>
+                    <option value="Matéria-Prima">Matéria-Prima</option>
+                </select>
+                <select id="insumo-filter-status" onchange="renderInsumos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-600 bg-white">
+                    <option value="">Todos os Status</option>
+                    <option value="baixo">Estoque Baixo</option>
+                    <option value="ok">Estoque OK</option>
+                </select>
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold uppercase text-slate-500 tracking-wider">
+                                <th class="py-3 px-4">Nome do Insumo</th>
+                                <th class="py-3 px-4">Categoria</th>
+                                <th class="py-3 px-4">Estoque Atual</th>
+                                <th class="py-3 px-4">Qtd. Mínima</th>
+                                <th class="py-3 px-4">Lote / Validade</th>
+                                <th class="py-3 px-4">Localização</th>
+                                <th class="py-3 px-4 text-right admin-only">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="insumos-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= EQUIPAMENTOS TAB ================= -->
+        <section id="tab-equipamentos" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900">Cadastro de Equipamentos / Patrimônio</h2>
+                    <p class="text-sm text-slate-500">Controle de aparelhos com número de patrimônio e localização.</p>
+                </div>
+                <button onclick="openEquipamentoModal()" class="admin-only inline-flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition shadow-sm">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Novo Equipamento</span>
+                </button>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3">
+                <div class="relative flex-1">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+                    <input type="text" id="equip-search" oninput="renderEquipamentos()" placeholder="Buscar por Nº Patrimônio, nome ou laboratório..." class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <select id="equip-filter-status" onchange="renderEquipamentos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-600 bg-white">
+                    <option value="">Todos os Status</option>
+                    <option value="Disponível">Disponível</option>
+                    <option value="Em Uso">Em Uso / Emprestado</option>
+                    <option value="Em Manutenção">Em Manutenção</option>
+                </select>
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold uppercase text-slate-500 tracking-wider">
+                                <th class="py-3 px-4">Nº Patrimônio</th>
+                                <th class="py-3 px-4">Nome / Modelo</th>
+                                <th class="py-3 px-4">Laboratório / Sala</th>
+                                <th class="py-3 px-4">Estado Conservação</th>
+                                <th class="py-3 px-4">Status</th>
+                                <th class="py-3 px-4 text-right admin-only">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="equipamentos-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PROFESSORES TAB ================= -->
+        <section id="tab-professores" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900">Professores Cadastrados</h2>
+                    <p class="text-sm text-slate-500">Docentes autorizados a retirar insumos e equipamentos.</p>
+                </div>
+                <button onclick="openProfessorModal()" class="admin-only inline-flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition shadow-sm">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Cadastrar Professor</span>
+                </button>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <div class="relative flex-1">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+                    <input type="text" id="prof-search" oninput="renderProfessores()" placeholder="Buscar por registro funcional, nome ou e-mail..." class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold uppercase text-slate-500 tracking-wider">
+                                <th class="py-3 px-4">Reg. Funcional</th>
+                                <th class="py-3 px-4">Nome Completo</th>
+                                <th class="py-3 px-4">Contato</th>
+                                <th class="py-3 px-4">Status</th>
+                                <th class="py-3 px-4 text-right admin-only">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="professores-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= MOVIMENTAÇÕES TAB ================= -->
+        <section id="tab-movimentacoes" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900">Movimentações & Empréstimos</h2>
+                    <p class="text-sm text-slate-500">Registre saídas/entradas de insumos e empréstimos de patrimônio aos docentes.</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="openMovimentacaoInsumoModal()" class="inline-flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition shadow-sm">
+                        <i data-lucide="arrow-down-right" class="w-4 h-4"></i>
+                        <span>Movimentar Insumo</span>
+                    </button>
+                    <button onclick="openEmprestimoEquipModal()" class="inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition shadow-sm">
+                        <i data-lucide="repeat" class="w-4 h-4"></i>
+                        <span>Empréstimo de Patrimônio</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-4">
+                <div class="border-b border-slate-200 flex space-x-4">
+                    <button onclick="switchMovTab('insumos')" id="mov-subtab-insumos" class="pb-2 font-semibold text-sm border-b-2 border-emerald-600 text-emerald-600">Histórico de Insumos</button>
+                    <button onclick="switchMovTab('equipamentos')" id="mov-subtab-equipamentos" class="pb-2 font-semibold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-800">Empréstimos de Equipamentos</button>
+                </div>
+
+                <div id="subtab-content-insumos" class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold uppercase text-slate-500">
+                                <th class="py-3 px-4">Data / Hora</th>
+                                <th class="py-3 px-4">Insumo</th>
+                                <th class="py-3 px-4">Tipo</th>
+                                <th class="py-3 px-4">Quantidade</th>
+                                <th class="py-3 px-4">Professor Responsável</th>
+                                <th class="py-3 px-4">Observação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mov-insumos-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                    </table>
+                </div>
+
+                <div id="subtab-content-equipamentos" class="hidden overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold uppercase text-slate-500">
+                                <th class="py-3 px-4">Nº Patrimônio</th>
+                                <th class="py-3 px-4">Equipamento</th>
+                                <th class="py-3 px-4">Professor</th>
+                                <th class="py-3 px-4">Data Retirada</th>
+                                <th class="py-3 px-4">Status Empréstimo</th>
+                                <th class="py-3 px-4 text-right">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mov-equipamentos-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+            &copy; PharmaLab - Sistema Integrado de Farmácia Acadêmica e Gestão Patrimonial.
+        </div>
+    </footer>
+
+    <!-- ================= MODAIS DE CADASTRO E EDIÇÃO ================= -->
+
+    <div id="modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden flex items-center justify-center p-4 overflow-y-auto">
+        
+        <!-- Modal Insumo -->
+        <div id="modal-insumo" class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden hidden transform transition-all">
+            <div class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center">
+                <h3 id="modal-insumo-title" class="font-bold text-lg">Novo Insumo</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="form-insumo" onsubmit="saveInsumo(event)" class="p-6 space-y-4">
+                <input type="hidden" id="insumo-id">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Insumo *</label>
+                    <input type="text" id="insumo-nome" required placeholder="Ex: Cloreto de Sódio PA" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Categoria *</label>
+                        <select id="insumo-categoria" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                            <option value="Reagentes">Reagentes</option>
+                            <option value="Descartáveis">Descartáveis</option>
+                            <option value="Vidrarias">Vidrarias</option>
+                            <option value="Medicamentos">Medicamentos</option>
+                            <option value="Matéria-Prima">Matéria-Prima</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Unidade *</label>
+                        <input type="text" id="insumo-unidade" required placeholder="Ex: frasco, mL, g" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Qtd. Atual *</label>
+                        <input type="number" step="0.01" id="insumo-qtd" required placeholder="0" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Qtd. Mínima Alerta *</label>
+                        <input type="number" step="0.01" id="insumo-min" required placeholder="5" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Lote</label>
+                        <input type="text" id="insumo-lote" placeholder="Ex: L-2024A" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Validade</label>
+                        <input type="date" id="insumo-validade" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Localização no Lab</label>
+                    <input type="text" id="insumo-localizacao" placeholder="Ex: Armário B, Prateleira 3" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+                <div class="pt-3 flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold">Salvar Insumo</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Modal Equipamento -->
+        <div id="modal-equipamento" class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden hidden transform transition-all">
+            <div class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center">
+                <h3 id="modal-equipamento-title" class="font-bold text-lg">Novo Equipamento / Patrimônio</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="form-equipamento" onsubmit="saveEquipamento(event)" class="p-6 space-y-4">
+                <input type="hidden" id="equip-id">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Número de Patrimônio *</label>
+                    <input type="text" id="equip-patrimonio" required placeholder="Ex: PAT-2024-001" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Equipamento *</label>
+                    <input type="text" id="equip-nome" required placeholder="Ex: Espectrofotômetro UV-Vis" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Laboratório / Sala *</label>
+                    <input type="text" id="equip-lab" required placeholder="Ex: Lab de Farmacotécnica 02" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Estado Conservação</label>
+                        <select id="equip-estado" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                            <option value="Excelente">Excelente</option>
+                            <option value="Bom">Bom</option>
+                            <option value="Regular">Regular</option>
+                            <option value="Necessita Manutenção">Necessita Manutenção</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Status</label>
+                        <select id="equip-status" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                            <option value="Disponível">Disponível</option>
+                            <option value="Em Uso">Em Uso</option>
+                            <option value="Em Manutenção">Em Manutenção</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="pt-3 flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold">Salvar Patrimônio</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Modal Professor -->
+        <div id="modal-professor" class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden hidden transform transition-all">
+            <div class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center">
+                <h3 id="modal-professor-title" class="font-bold text-lg">Novo Professor</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="form-professor" onsubmit="saveProfessor(event)" class="p-6 space-y-4">
+                <input type="hidden" id="prof-id">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Registro Funcional / Matrícula *</label>
+                    <input type="text" id="prof-registro" required placeholder="Ex: RF-98765" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nome Completo *</label>
+                    <input type="text" id="prof-nome" required placeholder="Ex: Dr. Carlos Eduardo Silva" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">E-mail Institucional *</label>
+                    <input type="email" id="prof-email" required placeholder="carlos.silva@universidade.edu.br" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Telefone / Ramal</label>
+                        <input type="text" id="prof-telefone" placeholder="(11) 98765-4321" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Status</label>
+                        <select id="prof-status" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                            <option value="Ativo">Ativo</option>
+                            <option value="Inativo">Inativo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="pt-3 flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold">Salvar Professor</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Modal Movimentação Insumo -->
+        <div id="modal-mov-insumo" class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden hidden transform transition-all">
+            <div class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center">
+                <h3 class="font-bold text-lg">Registrar Movimentação de Insumo</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="form-mov-insumo" onsubmit="saveMovimentacaoInsumo(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Selecione o Insumo *</label>
+                    <select id="mov-insumo-id" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"></select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tipo de Operação *</label>
+                        <select id="mov-tipo" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                            <option value="Saída">Saída (Aula/Pesquisa)</option>
+                            <option value="Entrada">Entrada (Abastecimento)</option>
+                            <option value="Descarte">Descarte / Perda</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Quantidade *</label>
+                        <input type="number" step="0.01" id="mov-quantidade" required min="0.01" placeholder="0" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Professor Responsável *</label>
+                    <select id="mov-prof-id" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Observações / Motivo</label>
+                    <textarea id="mov-obs" rows="2" placeholder="Ex: Utilizado na prática da disciplina de Farmacotécnica I" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"></textarea>
+                </div>
+                <div class="pt-3 flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold">Confirmar Movimentação</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Modal Empréstimo Equipamento -->
+        <div id="modal-emp-equipamento" class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden hidden transform transition-all">
+            <div class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center">
+                <h3 class="font-bold text-lg">Novo Empréstimo de Patrimônio</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="form-emp-equip" onsubmit="saveEmprestimoEquip(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Equipamento (Disponíveis) *</label>
+                    <select id="emp-equip-id" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Professor Solicitante *</label>
+                    <select id="emp-prof-id" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Finalidade / Observações</label>
+                    <textarea id="emp-obs" rows="2" placeholder="Ex: Empréstimo para aula prática externa no laboratório B" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"></textarea>
+                </div>
+                <div class="pt-3 flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold">Registrar Empréstimo</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Application Script Logic -->
+    <script>
+        // Seed Initial Data
+        const initialInsumos = [
+            { id: '1', nome: 'Álcool Etílico 70% INPM', categoria: 'Reagentes', unidade: 'Frasco 1L', qtd: 15, min: 5, lote: 'L-7023', validade: '2027-10-15', localizacao: 'Armário Reagentes A' },
+            { id: '2', nome: 'Cloreto de Sódio PA', categoria: 'Reagentes', unidade: 'Frasco 500g', qtd: 2, min: 4, lote: 'L-1102', validade: '2026-12-01', localizacao: 'Armário A2' },
+            { id: '3', nome: 'Luvas de Nitrilo M', categoria: 'Descartáveis', unidade: 'Caixa 100un', qtd: 8, min: 10, lote: 'L-9981', validade: '2028-05-20', localizacao: 'Estoque Central 01' },
+            { id: '4', nome: 'Béquer 250mL Graduado', categoria: 'Vidrarias', unidade: 'Peça', qtd: 24, min: 10, lote: 'N/A', validade: '', localizacao: 'Prateleira Vidrarias 03' },
+            { id: '5', nome: 'Paracetamol Matéria-Prima', categoria: 'Matéria-Prima', unidade: 'Kg', qtd: 0.5, min: 1.0, lote: 'L-8841', validade: '2026-11-20', localizacao: 'Geladeira Insumos' }
+        ];
+
+        const initialEquipamentos = [
+            { id: '1', patrimonio: 'PAT-FAR-001', nome: 'Espectrofotômetro UV-Vis', lab: 'Lab Analítica 01', estado: 'Excelente', status: 'Disponível' },
+            { id: '2', patrimonio: 'PAT-FAR-002', nome: 'Balança Analítica de Precisão 0.0001g', lab: 'Lab Controle Qualidade', estado: 'Bom', status: 'Em Uso' },
+            { id: '3', patrimonio: 'PAT-FAR-003', nome: 'Agitador Magnético com Aquecimento', lab: 'Lab Farmacotécnica 02', estado: 'Bom', status: 'Disponível' },
+            { id: '4', patrimonio: 'PAT-FAR-004', nome: 'PHmetro de Bancada', lab: 'Lab Farmacotécnica 01', estado: 'Necessita Manutenção', status: 'Em Manutenção' }
+        ];
+
+        const initialProfessores = [
+            { id: '1', registro: 'RF-10923', nome: 'Dra. Amanda Rodrigues', email: 'amanda.rodrigues@universidade.edu.br', telefone: '(11) 98112-3344', status: 'Ativo' },
+            { id: '2', registro: 'RF-22415', nome: 'Dr. Roberto Mendonça', email: 'roberto.mendonca@universidade.edu.br', telefone: '(11) 97341-8899', status: 'Ativo' },
+            { id: '3', registro: 'RF-33109', nome: 'Prof. Juliana Costa', email: 'juliana.costa@universidade.edu.br', telefone: '(11) 99122-4455', status: 'Ativo' }
+        ];
+
+        const initialMovInsumos = [
+            { id: '1', data: '2026-11-05 14:30', insumoNome: 'Cloreto de Sódio PA', tipo: 'Saída', quantidade: 1, unidade: 'Frasco 500g', profNome: 'Dra. Amanda Rodrigues', obs: 'Aula Prática Quím. Analítica' },
+            { id: '2', data: '2026-11-06 09:15', insumoNome: 'Luvas de Nitrilo M', tipo: 'Saída', quantidade: 2, unidade: 'Caixa 100un', profNome: 'Dr. Roberto Mendonça', obs: 'Prática de Manipulação' }
+        ];
+
+        const initialEmpEquipamentos = [
+            { id: '1', patrimonio: 'PAT-FAR-002', equipNome: 'Balança Analítica de Precisão 0.0001g', profNome: 'Dr. Roberto Mendonça', dataRetirada: '2026-11-06 08:30', status: 'Ativo', obs: 'Empréstimo para Pesquisa TCC' }
+        ];
+
+        // State Management
+        let insumos = JSON.parse(localStorage.getItem('pharmalab_insumos')) || initialInsumos;
+        let equipamentos = JSON.parse(localStorage.getItem('pharmalab_equipamentos')) || initialEquipamentos;
+        let professores = JSON.parse(localStorage.getItem('pharmalab_professores')) || initialProfessores;
+        let movInsumos = JSON.parse(localStorage.getItem('pharmalab_mov_insumos')) || initialMovInsumos;
+        let empEquipamentos = JSON.parse(localStorage.getItem('pharmalab_emp_equipamentos')) || initialEmpEquipamentos;
+        let currentUser = JSON.parse(sessionStorage.getItem('pharmalab_session_user')) || null;
+
+        // AUTHENTICATION LOGIC
+        function handleLogin(e) {
+            e.preventDefault();
+            const userInput = document.getElementById('login-username').value.trim();
+            const passInput = document.getElementById('login-password').value.trim();
+            const errorEl = document.getElementById('login-error');
+
+            errorEl.classList.add('hidden');
+
+            // 1. Check Admin
+            if (userInput.toLowerCase() === 'admin' && passInput === 'admin123') {
+                currentUser = { name: 'Administrador', role: 'admin', username: 'admin' };
+                completeLogin();
+                return;
+            }
+
+            // 2. Check Generic Professor Demo User
+            if (userInput.toLowerCase() === 'prof' && passInput === 'prof123') {
+                currentUser = { name: 'Professor Docente', role: 'professor', username: 'prof' };
+                completeLogin();
+                return;
+            }
+
+            // 3. Check Registered Teachers by RF
+            const foundProf = professores.find(p => p.registro.toLowerCase() === userInput.toLowerCase());
+            if (foundProf && passInput === '123456') {
+                currentUser = { name: fontNameShort(foundProf.nome), role: 'professor', username: foundProf.registro, profId: foundProf.id };
+                completeLogin();
+                return;
+            }
+
+            errorEl.classList.remove('hidden');
+        }
+
+        function completeLogin() {
+            sessionStorage.setItem('pharmalab_session_user', JSON.stringify(currentUser));
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('form-login').reset();
+            applyPermissions();
+            renderAll();
+            showToast(`Bem-vindo, ${currentUser.name}!`, "success");
+        }
+
+        function handleLogout() {
+            if (confirm("Deseja sair do sistema?")) {
+                sessionStorage.removeItem('pharmalab_session_user');
+                currentUser = null;
+                document.getElementById('login-screen').classList.remove('hidden');
+            }
+        }
+
+        function applyPermissions() {
+            if (!currentUser) return;
+
+            document.getElementById('user-display-name').innerText = currentUser.name;
+            document.getElementById('user-display-role').innerText = currentUser.role === 'admin' ? 'Administrador' : 'Professor';
+
+            const adminElements = document.querySelectorAll('.admin-only');
+            adminElements.forEach(el => {
+                if (currentUser.role === 'admin') {
+                    el.classList.remove('hidden');
+                } else {
+                    el.classList.add('hidden');
+                }
+            });
+        }
+
+        function fontNameShort(fullName) {
+            const parts = fullName.split(' ');
+            return parts.length > 1 ? `${parts[0]} ${parts[parts.length - 1]}` : fullName;
+        }
+
+        function saveData() {
+            localStorage.setItem('pharmalab_insumos', JSON.stringify(insumos));
+            localStorage.setItem('pharmalab_equipamentos', JSON.stringify(equipamentos));
+            localStorage.setItem('pharmalab_professores', JSON.stringify(professores));
+            localStorage.setItem('pharmalab_mov_insumos', JSON.stringify(movInsumos));
+            localStorage.setItem('pharmalab_emp_equipamentos', JSON.stringify(empEquipamentos));
+            renderAll();
+        }
+
+        function resetSystemData() {
+            if (currentUser.role !== 'admin') {
+                alert("Apenas o Administrador pode resetar o sistema.");
+                return;
+            }
+
+            if (confirm("Deseja realmente resetar os dados do sistema para a demonstração inicial?")) {
+                localStorage.clear();
+                insumos = [...initialInsumos];
+                equipamentos = [...initialEquipamentos];
+                professores = [...initialProfessores];
+                movInsumos = [...initialMovInsumos];
+                empEquipamentos = [...initialEmpEquipamentos];
+                saveData();
+                showToast("Dados resetados com sucesso!", "success");
+            }
+        }
+
+        // Navigation Management
+        function switchTab(tabId) {
+            document.querySelectorAll('section[id^="tab-"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('text-emerald-400', 'bg-slate-800');
+                btn.classList.add('text-slate-300');
+            });
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if(activeNav) {
+                activeNav.classList.add('text-emerald-400', 'bg-slate-800');
+                activeNav.classList.remove('text-slate-300');
+            }
+
+            document.querySelectorAll('.mob-tab-btn').forEach(btn => {
+                btn.classList.remove('text-emerald-400', 'bg-slate-800');
+                btn.classList.add('text-slate-300');
+            });
+            const activeMobNav = document.getElementById(`mob-nav-${tabId}`);
+            if(activeMobNav) {
+                activeMobNav.classList.add('text-emerald-400', 'bg-slate-800');
+                activeMobNav.classList.remove('text-slate-300');
+            }
+        }
+
+        function switchMovTab(type) {
+            if (type === 'insumos') {
+                document.getElementById('subtab-content-insumos').classList.remove('hidden');
+                document.getElementById('subtab-content-equipamentos').classList.add('hidden');
+                document.getElementById('mov-subtab-insumos').className = "pb-2 font-semibold text-sm border-b-2 border-emerald-600 text-emerald-600";
+                document.getElementById('mov-subtab-equipamentos').className = "pb-2 font-semibold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-800";
+            } else {
+                document.getElementById('subtab-content-insumos').classList.add('hidden');
+                document.getElementById('subtab-content-equipamentos').classList.remove('hidden');
+                document.getElementById('mov-subtab-equipamentos').className = "pb-2 font-semibold text-sm border-b-2 border-emerald-600 text-emerald-600";
+                document.getElementById('mov-subtab-insumos').className = "pb-2 font-semibold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-800";
+            }
+        }
+
+        // Render Functions
+        function renderAll() {
+            renderDashboard();
+            renderInsumos();
+            renderEquipamentos();
+            renderProfessores();
+            renderMovimentacoes();
+            applyPermissions();
+            lucide.createIcons();
+        }
+
+        function renderDashboard() {
+            const lowStockItems = insumos.filter(i => parseFloat(i.qtd) <= parseFloat(i.min));
+            const activeLoans = equipamentos.filter(e => e.status === 'Em Uso');
+
+            document.getElementById('dash-stat-insumos').innerText = insumos.length;
+            document.getElementById('dash-stat-baixo-estoque').innerText = lowStockItems.length;
+            document.getElementById('dash-stat-equipamentos').innerText = equipamentos.length;
+            document.getElementById('dash-stat-em-uso').innerText = activeLoans.length;
+            document.getElementById('dash-stat-professores').innerText = professores.filter(p => p.status === 'Ativo').length;
+            document.getElementById('dash-stat-alertas').innerText = lowStockItems.length;
+
+            const movContainer = document.getElementById('dash-list-movimentacoes');
+            if (movInsumos.length === 0) {
+                movContainer.innerHTML = `<p class="text-xs text-slate-400">Nenhuma movimentação registrada.</p>`;
+            } else {
+                movContainer.innerHTML = movInsumos.slice(-4).reverse().map(m => `
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-100 text-xs">
+                        <div class="flex items-center space-x-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${m.tipo === 'Saída' ? 'bg-amber-100 text-amber-700' : (m.tipo === 'Entrada' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700')}">
+                                ${m.tipo}
+                            </span>
+                            <div>
+                                <p class="font-semibold text-slate-800">${m.insumoNome} (${m.quantidade} ${m.unidade})</p>
+                                <p class="text-slate-500 text-[11px]">${m.profNome}</p>
+                            </div>
+                        </div>
+                        <span class="text-slate-400 font-mono text-[10px]">${m.data}</span>
+                    </div>
+                `).join('');
+            }
+
+            const alertContainer = document.getElementById('dash-list-alertas');
+            if (lowStockItems.length === 0) {
+                alertContainer.innerHTML = `<p class="text-xs text-emerald-600 font-medium flex items-center"><i data-lucide="check-circle" class="w-4 h-4 mr-1"></i> Todos os insumos estão em níveis adequados.</p>`;
+            } else {
+                alertContainer.innerHTML = lowStockItems.map(i => `
+                    <div class="flex items-center justify-between p-2.5 bg-rose-50 rounded-lg border border-rose-100 text-xs">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="alert-circle" class="w-4 h-4 text-rose-500"></i>
+                            <div>
+                                <p class="font-bold text-rose-900">${i.nome}</p>
+                                <p class="text-rose-700 text-[11px]">Estoque: ${i.qtd} ${i.unidade} (Mínimo: ${i.min})</p>
+                            </div>
+                        </div>
+                        <button onclick="switchTab('insumos')" class="text-[11px] font-semibold text-rose-700 hover:underline">Ver no Estoque</button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function renderInsumos() {
+            const search = document.getElementById('insumo-search').value.toLowerCase();
+            const catFilter = document.getElementById('insumo-filter-categoria').value;
+            const statusFilter = document.getElementById('insumo-filter-status').value;
+
+            const tbody = document.getElementById('insumos-table-body');
+            tbody.innerHTML = '';
+
+            const filtered = insumos.filter(i => {
+                const matchesSearch = i.nome.toLowerCase().includes(search) || 
+                                      (i.lote && i.lote.toLowerCase().includes(search)) || 
+                                      (i.localizacao && i.localizacao.toLowerCase().includes(search));
+                const matchesCat = !catFilter || i.categoria === catFilter;
+                
+                const isLow = parseFloat(i.qtd) <= parseFloat(i.min);
+                const matchesStatus = !statusFilter || (statusFilter === 'baixo' ? isLow : !isLow);
+
+                return matchesSearch && matchesCat && matchesStatus;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400">Nenhum insumo encontrado.</td></tr>`;
+                return;
+            }
+
+            const isAdmin = currentUser && currentUser.role === 'admin';
+
+            filtered.forEach(item => {
+                const isLow = parseFloat(item.qtd) <= parseFloat(item.min);
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-semibold text-slate-800">
+                        ${item.nome}
+                        ${isLow ? `<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-100 text-rose-800"><i data-lucide="alert-triangle" class="w-3 h-3 mr-1"></i> Baixo</span>` : ''}
+                    </td>
+                    <td class="py-3 px-4"><span class="px-2 py-1 rounded-md text-xs bg-slate-100 text-slate-700 font-medium">${item.categoria}</span></td>
+                    <td class="py-3 px-4 font-mono font-bold ${isLow ? 'text-rose-600' : 'text-slate-800'}">${item.qtd} <span class="text-xs font-normal text-slate-500">${item.unidade}</span></td>
+                    <td class="py-3 px-4 text-slate-500 font-mono">${item.min} ${item.unidade}</td>
+                    <td class="py-3 px-4 text-xs">
+                        <div><span class="text-slate-400">Lote:</span> ${item.lote || 'N/A'}</div>
+                        <div><span class="text-slate-400">Val:</span> ${item.validade ? formatDate(item.validade) : 'N/A'}</div>
+                    </td>
+                    <td class="py-3 px-4 text-xs text-slate-600">${item.localizacao || '-'}</td>
+                    <td class="py-3 px-4 text-right space-x-1 ${isAdmin ? '' : 'hidden'}">
+                        <button onclick="editInsumo('${item.id}')" class="p-1.5 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition" title="Editar"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                        <button onclick="deleteInsumo('${item.id}')" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Excluir"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderEquipamentos() {
+            const search = document.getElementById('equip-search').value.toLowerCase();
+            const statusFilter = document.getElementById('equip-filter-status').value;
+
+            const tbody = document.getElementById('equipamentos-table-body');
+            tbody.innerHTML = '';
+
+            const filtered = equipamentos.filter(e => {
+                const matchesSearch = e.patrimonio.toLowerCase().includes(search) || 
+                                      e.nome.toLowerCase().includes(search) || 
+                                      e.lab.toLowerCase().includes(search);
+                const matchesStatus = !statusFilter || e.status === statusFilter;
+                return matchesSearch && matchesStatus;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400">Nenhum equipamento encontrado.</td></tr>`;
+                return;
+            }
+
+            const isAdmin = currentUser && currentUser.role === 'admin';
+
+            filtered.forEach(item => {
+                let statusBadge = 'bg-emerald-100 text-emerald-800';
+                if(item.status === 'Em Uso') statusBadge = 'bg-blue-100 text-blue-800';
+                if(item.status === 'Em Manutenção') statusBadge = 'bg-amber-100 text-amber-800';
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-mono font-bold text-slate-900">${item.patrimonio}</td>
+                    <td class="py-3 px-4 font-semibold text-slate-800">${item.nome}</td>
+                    <td class="py-3 px-4 text-slate-600 text-xs">${item.lab}</td>
+                    <td class="py-3 px-4 text-xs">
+                        <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">${item.estado}</span>
+                    </td>
+                    <td class="py-3 px-4">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${statusBadge}">${item.status}</span>
+                    </td>
+                    <td class="py-3 px-4 text-right space-x-1 ${isAdmin ? '' : 'hidden'}">
+                        <button onclick="editEquipamento('${item.id}')" class="p-1.5 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition" title="Editar"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                        <button onclick="deleteEquipamento('${item.id}')" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Excluir"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderProfessores() {
+            const search = document.getElementById('prof-search').value.toLowerCase();
+            const tbody = document.getElementById('professores-table-body');
+            tbody.innerHTML = '';
+
+            const filtered = professores.filter(p => {
+                return p.registro.toLowerCase().includes(search) || 
+                       p.nome.toLowerCase().includes(search) || 
+                       p.email.toLowerCase().includes(search);
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">Nenhum professor encontrado.</td></tr>`;
+                return;
+            }
+
+            const isAdmin = currentUser && currentUser.role === 'admin';
+
+            filtered.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-mono font-semibold text-slate-800">${item.registro}</td>
+                    <td class="py-3 px-4 font-bold text-slate-900">${item.nome}</td>
+                    <td class="py-3 px-4 text-xs">
+                        <div class="text-slate-800">${item.email}</div>
+                        <div class="text-slate-400">${item.telefone || '-'}</div>
+                    </td>
+                    <td class="py-3 px-4">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${item.status === 'Ativo' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'}">${item.status}</span>
+                    </td>
+                    <td class="py-3 px-4 text-right space-x-1 ${isAdmin ? '' : 'hidden'}">
+                        <button onclick="editProfessor('${item.id}')" class="p-1.5 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition" title="Editar"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                        <button onclick="deleteProfessor('${item.id}')" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Excluir"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderMovimentacoes() {
+            const tbodyIns = document.getElementById('mov-insumos-table-body');
+            tbodyIns.innerHTML = '';
+            if (movInsumos.length === 0) {
+                tbodyIns.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400">Nenhum registro de movimentação de insumos.</td></tr>`;
+            } else {
+                movInsumos.slice().reverse().forEach(m => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 border-b border-slate-100";
+                    tr.innerHTML = `
+                        <td class="py-3 px-4 font-mono text-xs text-slate-500">${m.data}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-800">${m.insumoNome}</td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-0.5 rounded text-xs font-bold ${m.tipo === 'Saída' ? 'bg-amber-100 text-amber-700' : (m.tipo === 'Entrada' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700')}">
+                                ${m.tipo}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${m.quantidade} <span class="text-xs font-normal text-slate-500">${m.unidade}</span></td>
+                        <td class="py-3 px-4 text-slate-700 text-xs font-medium">${m.profNome}</td>
+                        <td class="py-3 px-4 text-slate-500 text-xs">${m.obs || '-'}</td>
+                    `;
+                    tbodyIns.appendChild(tr);
+                });
+            }
+
+            const tbodyEquip = document.getElementById('mov-equipamentos-table-body');
+            tbodyEquip.innerHTML = '';
+            if (empEquipamentos.length === 0) {
+                tbodyEquip.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400">Nenhum empréstimo ativo ou registrado.</td></tr>`;
+            } else {
+                empEquipamentos.slice().reverse().forEach(e => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 border-b border-slate-100";
+                    tr.innerHTML = `
+                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${e.patrimonio}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-800">${e.equipNome}</td>
+                        <td class="py-3 px-4 text-slate-700 text-xs font-medium">${e.profNome}</td>
+                        <td class="py-3 px-4 font-mono text-xs text-slate-500">${e.dataRetirada}</td>
+                        <td class="py-3 px-4">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${e.status === 'Ativo' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'}">
+                                ${e.status === 'Ativo' ? 'Em Empréstimo' : 'Devolvido'}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            ${e.status === 'Ativo' ? `<button onclick="devolverEquipamento('${e.id}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold transition">Registrar Devolução</button>` : `<span class="text-xs text-slate-400">Finalizado</span>`}
+                        </td>
+                    `;
+                    tbodyEquip.appendChild(tr);
+                });
+            }
+        }
+
+        // Modal Helpers
+        function openModalBackdrop() {
+            document.getElementById('modal-backdrop').classList.remove('hidden');
+        }
+        function closeModal() {
+            document.getElementById('modal-backdrop').classList.add('hidden');
+            document.querySelectorAll('#modal-backdrop > div').forEach(m => m.classList.add('hidden'));
+        }
+
+        // Insumo Actions
+        function openInsumoModal(id = null) {
+            if (currentUser.role !== 'admin') return;
+            document.getElementById('form-insumo').reset();
+            document.getElementById('insumo-id').value = '';
+            document.getElementById('modal-insumo-title').innerText = 'Novo Insumo';
+            openModalBackdrop();
+            document.getElementById('modal-insumo').classList.remove('hidden');
+        }
+
+        function editInsumo(id) {
+            if (currentUser.role !== 'admin') return;
+            const item = insumos.find(i => i.id === id);
+            if(!item) return;
+            document.getElementById('insumo-id').value = item.id;
+            document.getElementById('insumo-nome').value = item.nome;
+            document.getElementById('insumo-categoria').value = item.categoria;
+            document.getElementById('insumo-unidade').value = item.unidade;
+            document.getElementById('insumo-qtd').value = item.qtd;
+            document.getElementById('insumo-min').value = item.min;
+            document.getElementById('insumo-lote').value = item.lote || '';
+            document.getElementById('insumo-validade').value = item.validade || '';
+            document.getElementById('insumo-localizacao').value = item.localizacao || '';
+            
+            document.getElementById('modal-insumo-title').innerText = 'Editar Insumo';
+            openModalBackdrop();
+            document.getElementById('modal-insumo').classList.remove('hidden');
+        }
+
+        function saveInsumo(e) {
+            e.preventDefault();
+            if (currentUser.role !== 'admin') return;
+            const id = document.getElementById('insumo-id').value;
+            const data = {
+                id: id || Date.now().toString(),
+                nome: document.getElementById('insumo-nome').value,
+                categoria: document.getElementById('insumo-categoria').value,
+                unidade: document.getElementById('insumo-unidade').value,
+                qtd: parseFloat(document.getElementById('insumo-qtd').value),
+                min: parseFloat(document.getElementById('insumo-min').value),
+                lote: document.getElementById('insumo-lote').value,
+                validade: document.getElementById('insumo-validade').value,
+                localizacao: document.getElementById('insumo-localizacao').value
+            };
+
+            if (id) {
+                const idx = insumos.findIndex(i => i.id === id);
+                insumos[idx] = data;
+                showToast("Insumo atualizado com sucesso!", "success");
+            } else {
+                insumos.push(data);
+                showToast("Insumo cadastrado com sucesso!", "success");
+            }
+
+            saveData();
+            closeModal();
+        }
+
+        function deleteInsumo(id) {
+            if (currentUser.role !== 'admin') return;
+            if(confirm("Tem certeza que deseja remover este insumo?")) {
+                insumos = insumos.filter(i => i.id !== id);
+                saveData();
+                showToast("Insumo removido.", "info");
+            }
+        }
+
+        // Equipamento Actions
+        function openEquipamentoModal() {
+            if (currentUser.role !== 'admin') return;
+            document.getElementById('form-equipamento').reset();
+            document.getElementById('equip-id').value = '';
+            document.getElementById('modal-equipamento-title').innerText = 'Novo Equipamento / Patrimônio';
+            openModalBackdrop();
+            document.getElementById('modal-equipamento').classList.remove('hidden');
+        }
+
+        function editEquipamento(id) {
+            if (currentUser.role !== 'admin') return;
+            const item = equipamentos.find(e => e.id === id);
+            if(!item) return;
+            document.getElementById('equip-id').value = item.id;
+            document.getElementById('equip-patrimonio').value = item.patrimonio;
+            document.getElementById('equip-nome').value = item.nome;
+            document.getElementById('equip-lab').value = item.lab;
+            document.getElementById('equip-estado').value = item.estado;
+            document.getElementById('equip-status').value = item.status;
+
+            document.getElementById('modal-equipamento-title').innerText = 'Editar Equipamento';
+            openModalBackdrop();
+            document.getElementById('modal-equipamento').classList.remove('hidden');
+        }
+
+        function saveEquipamento(e) {
+            e.preventDefault();
+            if (currentUser.role !== 'admin') return;
+            const id = document.getElementById('equip-id').value;
+            const pat = document.getElementById('equip-patrimonio').value.trim();
+
+            const exists = equipamentos.some(eq => eq.patrimonio.toLowerCase() === pat.toLowerCase() && eq.id !== id);
+            if(exists) {
+                alert("Já existe um equipamento cadastrado com este Número de Patrimônio.");
+                return;
+            }
+
+            const data = {
+                id: id || Date.now().toString(),
+                patrimonio: pat,
+                nome: document.getElementById('equip-nome').value,
+                lab: document.getElementById('equip-lab').value,
+                estado: document.getElementById('equip-estado').value,
+                status: document.getElementById('equip-status').value
+            };
+
+            if (id) {
+                const idx = equipamentos.findIndex(e => e.id === id);
+                equipamentos[idx] = data;
+                showToast("Equipamento atualizado!", "success");
+            } else {
+                equipamentos.push(data);
+                showToast("Equipamento cadastrado com patrimônio registrado!", "success");
+            }
+
+            saveData();
+            closeModal();
+        }
+
+        function deleteEquipamento(id) {
+            if (currentUser.role !== 'admin') return;
+            if(confirm("Tem certeza que deseja excluir este equipamento do patrimônio?")) {
+                equipamentos = equipamentos.filter(e => e.id !== id);
+                saveData();
+                showToast("Equipamento removido.", "info");
+            }
+        }
+
+        // Professor Actions
+        function openProfessorModal() {
+            if (currentUser.role !== 'admin') return;
+            document.getElementById('form-professor').reset();
+            document.getElementById('prof-id').value = '';
+            document.getElementById('modal-professor-title').innerText = 'Novo Professor';
+            openModalBackdrop();
+            document.getElementById('modal-professor').classList.remove('hidden');
+        }
+
+        function editProfessor(id) {
+            if (currentUser.role !== 'admin') return;
+            const item = professores.find(p => p.id === id);
+            if(!item) return;
+            document.getElementById('prof-id').value = item.id;
+            document.getElementById('prof-registro').value = item.registro;
+            document.getElementById('prof-nome').value = item.nome;
+            document.getElementById('prof-email').value = item.email;
+            document.getElementById('prof-telefone').value = item.telefone || '';
+            document.getElementById('prof-status').value = item.status;
+
+            document.getElementById('modal-professor-title').innerText = 'Editar Professor';
+            openModalBackdrop();
+            document.getElementById('modal-professor').classList.remove('hidden');
+        }
+
+        function saveProfessor(e) {
+            e.preventDefault();
+            if (currentUser.role !== 'admin') return;
+            const id = document.getElementById('prof-id').value;
+            const reg = document.getElementById('prof-registro').value.trim();
+
+            const exists = professores.some(p => p.registro.toLowerCase() === reg.toLowerCase() && p.id !== id);
+            if(exists) {
+                alert("Já existe um professor cadastrado com este Registro Funcional.");
+                return;
+            }
+
+            const data = {
+                id: id || Date.now().toString(),
+                registro: reg,
+                nome: document.getElementById('prof-nome').value,
+                email: document.getElementById('prof-email').value,
+                telefone: document.getElementById('prof-telefone').value,
+                status: document.getElementById('prof-status').value
+            };
+
+            if (id) {
+                const idx = professores.findIndex(p => p.id === id);
+                professores[idx] = data;
+                showToast("Professor atualizado!", "success");
+            } else {
+                professores.push(data);
+                showToast("Professor cadastrado com sucesso!", "success");
+            }
+
+            saveData();
+            closeModal();
+        }
+
+        function deleteProfessor(id) {
+            if (currentUser.role !== 'admin') return;
+            if(confirm("Deseja realmente excluir este professor?")) {
+                professores = professores.filter(p => p.id !== id);
+                saveData();
+                showToast("Professor removido.", "info");
+            }
+        }
+
+        // Movimentação & Empréstimo Actions (Docentes e Admins)
+        function openMovimentacaoInsumoModal() {
+            if(insumos.length === 0 || professores.length === 0) {
+                alert("É necessário ter pelo menos um insumo e um professor cadastrado para registrar movimentação.");
+                return;
+            }
+
+            const insumoSelect = document.getElementById('mov-insumo-id');
+            insumoSelect.innerHTML = insumos.map(i => `<option value="${i.id}">${i.nome} (Atual: ${i.qtd} ${i.unidade})</option>`).join('');
+
+            const profSelect = document.getElementById('mov-prof-id');
+            const activeProfs = professores.filter(p => p.status === 'Ativo');
+            profSelect.innerHTML = activeProfs.map(p => `<option value="${p.id}">${p.nome} (${p.registro})</option>`).join('');
+
+            if (currentUser.profId) {
+                profSelect.value = currentUser.profId;
+            }
+
+            document.getElementById('form-mov-insumo').reset();
+            openModalBackdrop();
+            document.getElementById('modal-mov-insumo').classList.remove('hidden');
+        }
+
+        function saveMovimentacaoInsumo(e) {
+            e.preventDefault();
+            const insumoId = document.getElementById('mov-insumo-id').value;
+            const profId = document.getElementById('mov-prof-id').value;
+            const tipo = document.getElementById('mov-tipo').value;
+            const qtd = parseFloat(document.getElementById('mov-quantidade').value);
+            const obs = document.getElementById('mov-obs').value;
+
+            const insumo = insumos.find(i => i.id === insumoId);
+            const prof = professores.find(p => p.id === profId);
+
+            if (tipo === 'Saída' && qtd > parseFloat(insumo.qtd)) {
+                alert(`Quantidade solicitada (${qtd}) é maior que a quantidade disponível em estoque (${insumo.qtd}).`);
+                return;
+            }
+
+            if (tipo === 'Saída' || tipo === 'Descarte') {
+                insumo.qtd = parseFloat((parseFloat(insumo.qtd) - qtd).toFixed(2));
+            } else if (tipo === 'Entrada') {
+                insumo.qtd = parseFloat((parseFloat(insumo.qtd) + qtd).toFixed(2));
+            }
+
+            movInsumos.push({
+                id: Date.now().toString(),
+                data: formatNow(),
+                insumoNome: insumo.nome,
+                tipo: tipo,
+                quantidade: qtd,
+                unidade: insumo.unidade,
+                profNome: prof ? prof.nome : 'N/A',
+                obs: obs
+            });
+
+            saveData();
+            closeModal();
+            showToast("Movimentação de insumo registrada com sucesso!", "success");
+        }
+
+        function openEmprestimoEquipModal() {
+            const availEquips = equipamentos.filter(e => e.status === 'Disponível');
+            if (availEquips.length === 0) {
+                alert("Não há equipamentos disponíveis no momento para empréstimo.");
+                return;
+            }
+            if (professores.length === 0) {
+                alert("É necessário ter professores cadastrados no sistema.");
+                return;
+            }
+
+            const equipSelect = document.getElementById('emp-equip-id');
+            equipSelect.innerHTML = availEquips.map(e => `<option value="${e.id}">${e.patrimonio} - ${e.nome}</option>`).join('');
+
+            const profSelect = document.getElementById('emp-prof-id');
+            const activeProfs = professores.filter(p => p.status === 'Ativo');
+            profSelect.innerHTML = activeProfs.map(p => `<option value="${p.id}">${p.nome} (${p.registro})</option>`).join('');
+
+            if (currentUser.profId) {
+                profSelect.value = currentUser.profId;
+            }
+
+            document.getElementById('form-emp-equip').reset();
+            openModalBackdrop();
+            document.getElementById('modal-emp-equipamento').classList.remove('hidden');
+        }
+
+        function saveEmprestimoEquip(e) {
+            e.preventDefault();
+            const equipId = document.getElementById('emp-equip-id').value;
+            const profId = document.getElementById('emp-prof-id').value;
+            const obs = document.getElementById('emp-obs').value;
+
+            const equip = equipamentos.find(e => e.id === equipId);
+            const prof = professores.find(p => p.id === profId);
+
+            equip.status = 'Em Uso';
+
+            empEquipamentos.push({
+                id: Date.now().toString(),
+                equipId: equip.id,
+                patrimonio: equip.patrimonio,
+                equipNome: equip.nome,
+                profNome: prof ? prof.nome : 'N/A',
+                dataRetirada: formatNow(),
+                status: 'Ativo',
+                obs: obs
+            });
+
+            saveData();
+            closeModal();
+            showToast("Empréstimo de patrimônio registrado!", "success");
+        }
+
+        function devolverEquipamento(loanId) {
+            const loan = empEquipamentos.find(l => l.id === loanId);
+            if (!loan) return;
+
+            if (confirm(`Confirmar devolução do equipamento ${loan.equipNome} (${loan.patrimonio})?`)) {
+                loan.status = 'Devolvido';
+                const equip = equipamentos.find(e => e.id === loan.equipId || e.patrimonio === loan.patrimonio);
+                if (equip) {
+                    equip.status = 'Disponível';
+                }
+                saveData();
+                showToast("Devolução concluída com sucesso!", "success");
+            }
+        }
+
+        // Utilities
+        function formatDate(dateStr) {
+            if(!dateStr) return '';
+            const [y, m, d] = dateStr.split('-');
+            return `${d}/${m}/${y}`;
+        }
+
+        function formatNow() {
+            const d = new Date();
+            const pad = n => n.toString().padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        }
+
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium flex items-center space-x-2 transition-all transform translate-y-2 opacity-0 pointer-events-auto ${type === 'success' ? 'bg-emerald-600' : 'bg-slate-800'}`;
+            toast.innerHTML = `<span>${msg}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Init App on load
+        window.onload = function() {
+            if (currentUser) {
+                document.getElementById('login-screen').classList.add('hidden');
+                applyPermissions();
+            }
+            renderAll();
+        };
+    </script>
+</body>
+</html>
